@@ -1,0 +1,1 @@
+Welcome! This is a tool that can automatically generate numpy-style docstrings. It is meant to be used from the command-line.
