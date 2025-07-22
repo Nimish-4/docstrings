@@ -58,14 +58,3 @@ def test_file_input_relative():
         (root / "a.py").write_text(" ")
         files = get_python_files(paths=[str(root / rel_path)], root=root)
         assert files[0].name == "a.py"
-
-
-class cde:
-    def x1():
-        """         My func \n """
-        def x3():
-            print("Im x3")
-        x3()
-    
-    def x2():
-        print("x2")
