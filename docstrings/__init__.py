@@ -1,6 +1,7 @@
 import click
 from pathlib import Path
 from .files import get_python_files
+from .docgenerator import process_module
 
 @click.command()
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
@@ -28,6 +29,7 @@ def main(paths, check, recursive, verbose):
         if check:
             click.echo(f"[CHECK] {file.name}")
         else:
+            res = process_module(file_path=file)
             click.echo(f"[GENERATE] Would generate docstring in {file.name}")
 
 def _process_file(file_path: Path, check: bool, verbose: bool):
