@@ -1,8 +1,7 @@
 import libcst as cst
 
 from typing import List, Tuple, Dict, Optional
-from docgenerator import DOCSTRING_FOR_CLASS, DOCSTRING_FOR_FUNCTION
-
+from .docgenerator import DOCSTRING_FOR_CLASS, DOCSTRING_FOR_FUNCTION
 
 class FunctionAndClassVisitor(cst.CSTTransformer):
     def __init__(self, file_path=None):
