@@ -1,65 +1,103 @@
-from docstrings.cst import FunctionAndClassVisitor
-
-import libcst as cst
 from pathlib import Path
 
-DOCSTRING_FOR_FUNCTION = """
-This is an example of a module level function.
+import libcst as cst
 
-Function parameters should be documented in the ``Parameters`` section.
-The name of each parameter is required. The type and description of each
-parameter is optional, but should be included if not obvious.
+from docstrings.cst import FunctionAndClassVisitor
 
-If \*args or \*\*kwargs are accepted,
-they should be listed as ``*args`` and ``**kwargs``.
+DOCSTRING_FOR_FUNCTION = """Summarize the function in one line.
 
-The format for a parameter is:
-
-    name : type
-        description
-
-        The description may span multiple lines. Following lines
-        should be indented to match the first line of the description.
-        The ": type" is optional.
-
-        Multiple paragraphs are supported in parameter
-        descriptions.
+Several sentences providing an extended description. Refer to
+variables using back-ticks, e.g. `var`. For functions (also method and module),
+there should be no blank lines after closing the docstring.
 
 Parameters
 ----------
-param1 : int
-    The first parameter.
-param2 : :obj:`str`, optional
-    The second parameter.
-*args
-    Variable length argument list.
-**kwargs
-    Arbitrary keyword arguments.
+var1 : array_like
+    Array_like means all those objects -- lists, nested lists, etc. --
+    that can be converted to an array.  We can also refer to
+    variables like `var1`.
+
+var2 : int
+    The type above can either refer to an actual Python type
+    (e.g. ``int``), or describe the type of the variable in more
+    detail, e.g. ``(N,) ndarray`` or ``array_like``.
+
+*args : iterable
+    Other arguments.
+
+long_var_name : {'hi', 'ho'}, optional
+    Choices in brackets, default first when optional.
 
 Returns
 -------
-bool
-    True if successful, False otherwise.
+type
+    Explanation of anonymous return value of type ``type``.
 
-    The return type is not optional. The ``Returns`` section may span
-    multiple lines and paragraphs. Following lines should be indented to
-    match the first line of the description.
+describe : type
+    Explanation of return value named `describe`.
 
-    The ``Returns`` section supports any reStructuredText formatting,
-    including literal blocks::
+out : type
+    Explanation of `out`.
 
-        {
-            'param1': param1,
-            'param2': param2
-        }
+type_without_description
+
+Other Parameters
+----------------
+only_seldom_used_keyword : int, optional
+    Infrequently used parameters can be described under this optional
+    section to prevent cluttering the Parameters section.
+**kwargs : dict
+    Other infrequently used keyword arguments. Note that all keyword
+    arguments appearing after the first parameter specified under the
+    Other Parameters section, should also be described under this
+    section.
 
 Raises
 ------
-AttributeError
-    The ``Raises`` section is a list of all exceptions
-    that are relevant to the interface.
-ValueError
-    If `param2` is equal to `param1`.
+BadException
+    Because you shouldn't have done that.
+
+See Also
+--------
+numpy.array : Relationship (optional).
+numpy.ndarray : Relationship (optional), which could be fairly long, in
+                which case the line wraps here.
+numpy.dot, numpy.linalg.norm, numpy.eye
+
+Notes
+-----
+Notes about the implementation algorithm (if needed).
+
+This can have multiple paragraphs.
+
+You may include some math:
+
+.. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
+
+And even use a Greek symbol like :math:`\omega` inline.
+
+References
+----------
+Cite the relevant literature, e.g. [1]_.  You may also cite these
+references in the notes section above.
+
+.. [1] O. McNoleg, "The integration of GIS, remote sensing,
+   expert systems and adaptive co-kriging for environmental habitat
+   modelling of the Highland Haggis using object-oriented, fuzzy-logic
+   and neural-network techniques," Computers & Geosciences, vol. 22,
+   pp. 585-588, 1996.
+
+Examples
+--------
+These are written in doctest format, and should illustrate how to
+use the function.
+
+>>> a = [1, 2, 3]
+>>> print([x + 3 for x in a])
+[4, 5, 6]
+>>> print("a\nb")
+a
+b
 """
 
 DOCSTRING_FOR_CLASS = """One line summary for the class and its purpose.
@@ -69,15 +107,19 @@ docstring in the method itself. Stick with one of the two choices.
 This paragraph (and others that may follow) are for explaining the 
 class in more detail.
 
+After closing the class docstring, there should be one blank line to
+separate following codes (PEP257).
+
 Note
 ----
-Do not include the `self` parameter in the ``Parameters`` section.
+The `self` parameter is not listed as the first parameter of methods.
 
 Parameters
 ----------
 num : float
     The number to be used for operations.
-msg : str, optional
+
+msg : str (default: "")
     Message to be displayed.
 
 Attributes
@@ -94,7 +136,7 @@ Import an example class
 
 References
 ----------
-[1] ManeBo
+[1] https://numpydoc.readthedocs.io/en/latest/
 """
 
 
@@ -112,7 +154,7 @@ def process_module(file_path: str) -> bool:
         visitor = FunctionAndClassVisitor(file_path=file_path)
         modified_module = module.visit(visitor)
 
-        # Write back ONLY if changed
+        # check if the code has been modified
         if modified_module.code != source_code:
             path.write_text(modified_module.code, encoding="utf-8")
             print(f"Updated {file_path}")
