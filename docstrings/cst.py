@@ -41,14 +41,22 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
     def visit_ClassDef(self, node: cst.ClassDef) -> Optional[bool]:
 
         self.indent_level += self._get_indent_level(node)
+        indent_ws = self.indent_level * " "
         return True
 
     def leave_ClassDef(
         self, original_node: cst.ClassDef, updated_node: cst.ClassDef
     ) -> cst.CSTNode:
 
+        indent_ws = self.indent_level * " "
         current_indent = self._get_indent_level(original_node)
         self.indent_level -= current_indent
+
+        if original_node.get_docstring() is not None:
+            return updated_node
+
+        # Determine indentation based on the body
+        final_docstring = self._build_indented_docstring(DOCSTRING_FOR_CLASS, indent_ws)
 
         return updated_node
 
