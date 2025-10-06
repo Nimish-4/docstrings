@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Optional
+
 import pathspec
 
 # file paths are expected as - no argument (all python files in current directory) or specific file paths
@@ -13,7 +14,9 @@ def load_gitignore(root: Path) -> pathspec.PathSpec:
     gitignore_file = root / ".gitignore"
     if gitignore_file.exists():
         patterns = gitignore_file.read_text().splitlines()
-        return pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, patterns)
+        return pathspec.PathSpec.from_lines(
+            pathspec.patterns.GitWildMatchPattern, patterns
+        )
     return pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, [])
 
 
@@ -31,7 +34,7 @@ def is_python_file(path: Path) -> bool:
 
 def is_git_ignored(path, root, gitignore_pattern):
     # empty gitignore
-    if gitignore_pattern.patterns==[]:
+    if gitignore_pattern.patterns == []:
         return False
 
     try:
@@ -40,10 +43,11 @@ def is_git_ignored(path, root, gitignore_pattern):
         rel_path = path
     return gitignore_pattern.match_file(str(rel_path))
 
+
 def get_python_files(
     paths: Optional[List[str]] = None,
     recursive: bool = False,
-    root: Optional[Path] = None
+    root: Optional[Path] = None,
 ) -> List[Path]:
     """
     Given a list of file or directory paths, return all valid Python files.
@@ -60,7 +64,9 @@ def get_python_files(
             all_files.append(path)
         elif path.is_dir():
             iterator = path.rglob("*.py") if recursive else path.glob("*.py")
-            all_files.extend(f for f in iterator if f.is_file() and not is_git_ignored(f, root, spec))
+            all_files.extend(
+                f for f in iterator if f.is_file() and not is_git_ignored(f, root, spec)
+            )
 
     return all_files
 

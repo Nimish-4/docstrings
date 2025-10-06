@@ -1,7 +1,10 @@
+from typing import List, Optional, Tuple
+
 import libcst as cst
 
-from typing import List, Tuple, Dict, Optional
-from .docgenerator import DOCSTRING_FOR_CLASS, DOCSTRING_FOR_FUNCTION
+from docstrings.utils.defintions import (DOCSTRING_FOR_CLASS,
+                                         DOCSTRING_FOR_FUNCTION)
+
 
 class FunctionAndClassVisitor(cst.CSTTransformer):
     def __init__(self, file_path=None):
@@ -47,10 +50,24 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
         self, original_node: cst.ClassDef, updated_node: cst.ClassDef
     ) -> cst.CSTNode:
 
+        indent_ws = self.indent_level * " "
         current_indent = self._get_indent_level(original_node)
         self.indent_level -= current_indent
 
-        return updated_node
+        if original_node.get_docstring() is not None:
+            return updated_node
+
+        # Determine indentation based on the body
+        final_docstring = self._build_indented_docstring(DOCSTRING_FOR_CLASS, indent_ws)
+
+        docstring_stmt = cst.SimpleStatementLine(
+            body=[cst.Expr(value=cst.SimpleString(final_docstring))],
+        )
+        new_body = updated_node.body.with_changes(
+            body=[docstring_stmt] + list(updated_node.body.body)
+        )
+
+        return updated_node.with_changes(body=new_body)
 
     def visit_FunctionDef(self, node: cst.FunctionDef) -> Optional[bool]:
         self.indent_level += self._get_indent_level(node)
@@ -70,7 +87,9 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
             return updated_node
 
         # Determine indentation based on the body
-        final_docstring = self._build_indented_docstring(DOCSTRING_FOR_CLASS, indent_ws)
+        final_docstring = self._build_indented_docstring(
+            DOCSTRING_FOR_FUNCTION, indent_ws
+        )
 
         docstring_stmt = cst.SimpleStatementLine(
             body=[cst.Expr(value=cst.SimpleString(final_docstring))],
