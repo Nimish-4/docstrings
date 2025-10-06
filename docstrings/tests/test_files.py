@@ -1,6 +1,7 @@
-import pytest
 import tempfile
 from pathlib import Path
+
+import pytest
 
 from docstrings.files import get_python_files
 
@@ -32,14 +33,18 @@ def temp_project():
 
 
 def test_non_recursive_collect(temp_project):
-    files = get_python_files(paths=[str(temp_project)], recursive=False, root=temp_project)
+    files = get_python_files(
+        paths=[str(temp_project)], recursive=False, root=temp_project
+    )
     file_names = sorted(f.name for f in files)
     assert file_names == ["a.py"]
 
 
 def test_recursive_collect(temp_project):
     print("test - ", str(temp_project))
-    files = get_python_files(paths=[str(temp_project)], recursive=True, root=temp_project)
+    files = get_python_files(
+        paths=[str(temp_project)], recursive=True, root=temp_project
+    )
     file_names = sorted(f.name for f in files)
     assert file_names == ["a.py", "c.py"]  # d.py is excluded via .gitignore
 
