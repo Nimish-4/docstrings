@@ -31,3 +31,23 @@ def process_module(file_path: str) -> bool:
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
         return False
+
+
+def check_module(file_path: str) -> bool:
+    try:
+        path = Path(file_path)
+
+        try:
+            module = FunctionAndClassVisitor()._store_missing_docstrings(path)
+            if module and module.missing_docstrings:
+                print(f"Missing docstrings in {module.file_path}:")
+                for kind, name in module.missing_docstrings:
+                    print(f"  {kind} '{name}'")
+
+        except Exception as parse_err:
+            print(f"Skipping {file_path} (parse error): {parse_err}")
+            return False
+    
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
+        return False

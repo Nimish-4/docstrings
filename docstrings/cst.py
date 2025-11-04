@@ -2,13 +2,14 @@ from typing import List, Optional, Tuple
 
 import libcst as cst
 
-from docstrings.utils.defintions import (DOCSTRING_FOR_CLASS,
+from docstrings.utils.definitions import (DOCSTRING_FOR_CLASS,
                                          DOCSTRING_FOR_FUNCTION)
 
 
 class FunctionAndClassVisitor(cst.CSTTransformer):
     def __init__(self, file_path=None):
         self.stack: List[Tuple[str, ...]] = []
+        self.missing_docstrings = []
         self.indent_level = 0  # no. of whitespaces at current level
         self.file_path = file_path
         self.missing_docstrings = []
@@ -44,6 +45,7 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
     def visit_ClassDef(self, node: cst.ClassDef) -> Optional[bool]:
 
         self.indent_level += self._get_indent_level(node)
+        self.stack.append(node)
         return True
 
     def leave_ClassDef(
@@ -56,6 +58,10 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
 
         if original_node.get_docstring() is not None:
             return updated_node
+        
+        self.missing_docstrings.append(
+                ("class", original_node.name.value)
+            )
 
         # Determine indentation based on the body
         final_docstring = self._build_indented_docstring(DOCSTRING_FOR_CLASS, indent_ws)
@@ -71,6 +77,7 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
 
     def visit_FunctionDef(self, node: cst.FunctionDef) -> Optional[bool]:
         self.indent_level += self._get_indent_level(node)
+        self.stack.append(node)
 
         # Do not visit functions inside functions
         return False
@@ -86,6 +93,10 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
         if original_node.get_docstring() is not None:
             return updated_node
 
+        self.missing_docstrings.append(
+                ("function", original_node.name.value)
+            )
+
         # Determine indentation based on the body
         final_docstring = self._build_indented_docstring(
             DOCSTRING_FOR_FUNCTION, indent_ws
@@ -100,13 +111,13 @@ class FunctionAndClassVisitor(cst.CSTTransformer):
 
         return updated_node.with_changes(body=new_body)
 
-    def _store_missing_docstrings(self):
-        with open(self.file_path, "r", encoding="utf-8") as f:
+    @classmethod
+    def _store_missing_docstrings(cls, file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
             source_code = f.read()
         module = cst.parse_module(source_code)
 
-        visitor = FunctionAndClassVisitor()
+        visitor = cls(file_path=file_path)
         module.visit(visitor)
-        for node in visitor.stack2:
-            if node.get_docstring() is None:
-                self.missing_docstrings.append(node)
+        
+        return visitor
